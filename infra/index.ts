@@ -1,6 +1,12 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 
+// Configure Kubernetes provider
+const k8sProvider = new k8s.Provider("k8s-provider", {
+    kubeconfig: process.env.KUBECONFIG || "~/.kube/config",
+    context: "minikube",
+});
+
 // Configuration values
 const appName = "simple-typescript-app-pulumi";
 const imageTag = "latest";
@@ -73,7 +79,7 @@ const deployment = new k8s.apps.v1.Deployment(appName, {
             },
         },
     },
-});
+}, { provider: k8sProvider });
 
 // Kubernetes Service
 const service = new k8s.core.v1.Service(`${appName}-service`, {
@@ -94,7 +100,7 @@ const service = new k8s.core.v1.Service(`${appName}-service`, {
             nodePort: nodePort,
         }],
     },
-});
+}, { provider: k8sProvider });
 
 // Export important values
 export const deploymentName = deployment.metadata.name;
