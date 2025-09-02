@@ -55,8 +55,9 @@ jobs:
       working-directory: infra
       run: |
         npm ci
-        # Use dedicated stack for GitHub Actions Minikube
-        pulumi stack select dev-github-minikube || pulumi stack init dev-github-minikube
+        # Use unique stack name with pipeline run ID for fresh infrastructure
+        STACK_NAME="dev-github-${{ github.run_id }}"
+        pulumi stack select $STACK_NAME || pulumi stack init $STACK_NAME
         # Pin the Kubernetes context for this stack
         pulumi config set kubernetes:context minikube
         # Deploy with refresh to detect any drift
