@@ -1,9 +1,13 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as k8s from "@pulumi/kubernetes";
 
-// Configure Kubernetes provider
+// Get configuration
+const config = new pulumi.Config();
+const k8sContext = config.get("kubernetes:context") || "minikube";
+
+// Configure Kubernetes provider with explicit context
 const k8sProvider = new k8s.Provider("k8s-provider", {
-    kubeconfig: process.env.KUBECONFIG || "~/.kube/config",
+    context: k8sContext,
 });
 
 // Configuration values

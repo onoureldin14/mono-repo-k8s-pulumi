@@ -42,13 +42,14 @@ npm run build        # Production build
 ```bash
 cd infra
 npm install
-pulumi stack select dev
+pulumi stack select dev || pulumi stack init dev
+pulumi config set kubernetes:context minikube
 ```
 
 ### 3. Deploy
 ```bash
 cd infra
-pulumi up
+pulumi up --refresh
 ```
 
 ## 🔄 CI/CD Pipeline
