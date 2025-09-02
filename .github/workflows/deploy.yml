@@ -1,0 +1,69 @@
+name: Main Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+  REGISTRY: onoureldin14
+  IMAGE_NAME: simple-typescript-app-pulumi
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      working-directory: app
+      run: npm ci
+
+    - name: Build application
+      working-directory: app
+      run: npm run build
+
+    - name: Setup Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./app
+        push: true
+        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+    - name: Setup Minikube
+      uses: medyagh/setup-minikube@master
+
+    - name: Setup Pulumi
+      uses: pulumi/setup-pulumi@v2
+
+    - name: Deploy to Kubernetes
+      working-directory: infra
+      run: |
+        npm ci
+        pulumi stack select dev
+        pulumi up --yes --non-interactive
+
+    - name: Wait for deployment
+      run: |
+        kubectl wait --for=condition=ready pod -l app=typescript-app --timeout=60s
+
+    - name: Show status
+      run: |
+        kubectl get pods
+        kubectl get services
+        echo "🌐 Access at: http://$(minikube ip):30000"
