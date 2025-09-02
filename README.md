@@ -28,6 +28,7 @@ mono-repo-k8s-pulumi/
 - Pulumi CLI
 - Kubernetes cluster access
 - GitHub repository
+- GitHub Secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`, `PULUMI_ACCESS_TOKEN`
 
 ### 1. Setup Application
 ```bash

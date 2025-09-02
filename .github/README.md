@@ -38,6 +38,11 @@ Set these in your GitHub repository settings:
 - Get from [Docker Hub Account Settings](https://hub.docker.com/settings/security)
 - Used for pushing images to Docker Hub
 
+### `PULUMI_ACCESS_TOKEN`
+- Your Pulumi access token
+- Get from [Pulumi Console](https://app.pulumi.com/account/tokens)
+- Used for Pulumi authentication and state management
+
 ## Environment Protection
 
 The deployment workflow uses GitHub Environments for additional security:
