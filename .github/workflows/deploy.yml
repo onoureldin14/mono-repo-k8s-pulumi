@@ -62,7 +62,7 @@ jobs:
 
     - name: Wait for deployment
       run: |
-        kubectl wait --for=condition=ready pod -l app=typescript-app --timeout=60s
+        kubectl wait --for=condition=ready pod -l app=simple-typescript-app-pulumi --timeout=60s
 
     - name: Show status
       run: |
