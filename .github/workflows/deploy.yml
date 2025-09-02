@@ -56,10 +56,21 @@ jobs:
       run: |
         npm ci
         pulumi stack select dev || pulumi stack init dev
+        # Check what Pulumi thinks it needs to do
+        pulumi preview --non-interactive
         pulumi up --yes --non-interactive
       env:
         PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
         KUBECONFIG: ~/.kube/config
+
+    - name: Check deployment status
+      run: |
+        echo "=== Checking what was deployed ==="
+        kubectl get all
+        echo "=== Looking for our app ==="
+        kubectl get pods -l app=simple-typescript-app-pulumi
+        echo "=== All pods ==="
+        kubectl get pods
 
     - name: Wait for deployment
       run: |
