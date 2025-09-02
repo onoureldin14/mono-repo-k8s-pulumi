@@ -4,7 +4,6 @@ import * as k8s from "@pulumi/kubernetes";
 // Configure Kubernetes provider
 const k8sProvider = new k8s.Provider("k8s-provider", {
     kubeconfig: process.env.KUBECONFIG || "~/.kube/config",
-    context: "minikube",
 });
 
 // Configuration values
