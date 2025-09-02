@@ -1,0 +1,3 @@
+name: typescript-app-infra
+runtime: nodejs
+description: Infrastructure for TypeScript app deployment using Pulumi

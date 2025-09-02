@@ -1,0 +1,2 @@
+config:
+  typescript-app-infra:ingressHost: "simple-typescript-app-pulumi.dev.local"
