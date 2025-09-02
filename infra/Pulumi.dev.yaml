@@ -1,2 +1,3 @@
 config:
-  typescript-app-infra:ingressHost: "simple-typescript-app-pulumi.dev.local"
+  typescript-app-infra:kubernetes:context: "minikube"
+  typescript-app-infra:ingressHost: "simple-typescript-app-pulumi.local"
