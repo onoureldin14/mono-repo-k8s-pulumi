@@ -1,111 +1,61 @@
 import * as pulumi from "@pulumi/pulumi";
-import * as k8s from "@pulumi/kubernetes";
+import { AppDeployment } from "./components";
 
 // Get configuration
 const config = new pulumi.Config();
-const k8sContext = config.get("kubernetes:context") || "minikube";
-
-// Configure Kubernetes provider with explicit context
-const k8sProvider = new k8s.Provider("k8s-provider", {
-    context: k8sContext,
-});
 
 // Configuration values
 const appName = "simple-typescript-app-pulumi";
-const imageTag = "latest";
+const imageTag = "v1.0.0"; // Changed from "latest" to avoid policy violation
 const containerPort = 3000;
 const nodePort = 30000;
-const replicas = 2;
 
-// Kubernetes Deployment
-const deployment = new k8s.apps.v1.Deployment(appName, {
-    metadata: {
-        name: appName,
-        labels: {
-            app: appName,
-        },
+// Deploy as Deployment (default)
+const appDeployment = new AppDeployment("app-deployment", {
+    name: appName,
+    image: "onoureldin14/simple-typescript-app-pulumi",
+    imageTag: imageTag,
+    containerPort: containerPort,
+    nodePort: nodePort,
+    replicas: 2,
+    deploymentType: "deployment",
+    serviceType: "NodePort",
+    env: [
+        { name: "CUSTOM_ENV", value: "production" }
+    ],
+    resources: {
+        requests: { cpu: "100m", memory: "128Mi" },
+        limits: { cpu: "500m", memory: "512Mi" },
     },
-    spec: {
-        replicas: replicas,
-        selector: {
-            matchLabels: {
-                app: appName,
-            },
-        },
-        template: {
-            metadata: {
-                labels: {
-                    app: appName,
-                },
-            },
-            spec: {
-                containers: [{
-                    name: appName,
-                    image: `onoureldin14/${appName}:${imageTag}`,
-                    ports: [{
-                        containerPort: containerPort,
-                    }],
-                    env: [{
-                        name: "NODE_ENV",
-                        value: "production",
-                    }, {
-                        name: "PORT",
-                        value: containerPort.toString(),
-                    }],
-                    resources: {
-                        requests: {
-                            cpu: "100m",
-                            memory: "128Mi",
-                        },
-                        limits: {
-                            cpu: "500m",
-                            memory: "512Mi",
-                        },
-                    },
-                    livenessProbe: {
-                        httpGet: {
-                            path: "/health",
-                            port: containerPort,
-                        },
-                        initialDelaySeconds: 30,
-                        periodSeconds: 10,
-                    },
-                    readinessProbe: {
-                        httpGet: {
-                            path: "/health",
-                            port: containerPort,
-                        },
-                        initialDelaySeconds: 5,
-                        periodSeconds: 5,
-                    },
-                }],
-            },
-        },
+    labels: {
+        environment: "production",
+        team: "platform",
     },
-}, { provider: k8sProvider });
+});
 
-// Kubernetes Service
-const service = new k8s.core.v1.Service(`${appName}-service`, {
-    metadata: {
-        name: `${appName}-service`,
-        labels: {
-            app: appName,
-        },
-    },
-    spec: {
-        type: "NodePort",
-        selector: {
-            app: appName,
-        },
-        ports: [{
-            port: containerPort,
-            targetPort: containerPort,
-            nodePort: nodePort,
-        }],
-    },
-}, { provider: k8sProvider });
+// Example: Deploy as DaemonSet (commented out, uncomment to use)
+// const appDaemonSet = new AppDeployment("app-daemonset", {
+//     name: `${appName}-daemon`,
+//     image: "onoureldin14/simple-typescript-app-pulumi",
+//     imageTag: imageTag,
+//     containerPort: containerPort,
+//     deploymentType: "daemonset",
+//     serviceType: "ClusterIP",
+//     env: [
+//         { name: "CUSTOM_ENV", value: "daemon" }
+//     ],
+//     resources: {
+//         requests: { cpu: "50m", memory: "64Mi" },
+//         limits: { cpu: "200m", memory: "256Mi" },
+//     },
+//     labels: {
+//         environment: "production",
+//         team: "platform",
+//         workload: "daemon",
+//     },
+// });
 
 // Export important values
-export const deploymentName = deployment.metadata.name;
-export const serviceName = service.metadata.name;
-export const appUrl = `http://$(minikube ip):${nodePort}`;
+export const deploymentName = appDeployment.deployment?.metadata.name;
+export const serviceName = appDeployment.service.metadata.name;
+export const appUrl = appDeployment.appUrl;
